@@ -1,29 +1,30 @@
-/* File: style.css */
-
+/* Global Reset & Base Fonts */
 body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0 auto; min-height: 100vh; overflow-x: hidden; }
 .mobile-container { width: 100%; max-width: 480px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.1); }
 
-/* Animasi Glassmorphism */
+/* Glassmorphism Effect */
 .glass { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
 
-/* Kamera Styling */
+/* Camera Styling */
 .camera-box { position: relative; width: 100%; aspect-ratio: 1/1; background: #000; border-radius: 32px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
 .face-mask { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75%; height: 85%; border: 2px dashed rgba(255,255,255,0.4); border-radius: 50% 50% 35% 35%; pointer-events: none; }
 
-/* Tombol & Card Animasi */
+/* Interactive Buttons */
 .btn-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; user-select: none; }
 .btn-card:active { transform: scale(0.92); }
 
-/* Bottom Sheet Transition */
+/* Bottom Sheet Animation */
 #sheet { transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); border-radius: 40px 40px 0 0; }
 #overlay { transition: opacity 0.4s ease; }
 
+/* Status Indicators */
 .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
 @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
+/* Photo Previews */
 #photo-preview { background-size: cover; background-position: center; z-index: 10; }
 
-/* Avatar Glow & Animation */
+/* Avatar Glow Animation */
 @keyframes bounce-slow {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-12px) scale(1.08); }
