@@ -1,10 +1,10 @@
 {
-  "name": "My Camera App",
-  "short_name": "MyApp",
+  "name": "Presensi Binary Digital",
+  "short_name": "Presensi",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1a73e8",
+  "background_color": "#f1f5f9",
+  "theme_color": "#2563eb",
   "orientation": "portrait",
   "icons": [
     {
