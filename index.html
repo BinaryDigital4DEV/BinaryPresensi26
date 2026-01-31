@@ -1,47 +1,93 @@
+
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>My App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1a73e8">
+	<base target="_top">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="https://unpkg.com/lucide@latest"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<body style="margin:0;font-family:sans-serif">
+<div class="mobile-container flex flex-col">
+	<!-- Top Header Section -->
+	<div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-8 rounded-b-[50px] text-white shadow-2xl relative overflow-hidden font-sans">
+		<div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+		<div class="flex justify-between items-center mb-8 relative z-10">
+			<div>
+				<h1 class="text-2xl font-bold">Presensi Binary Digital</h1>
+				<div id="greet-msg" class="text-sm mt-1">Selamat Datang</div>
+			</div>
+			<div>
+				<span id="clock" class="text-lg font-semibold"></span>
+				<div id="date-label" class="text-xs"></div>
+			</div>
+		</div>
+		<div class="glass rounded-[28px] p-5 flex justify-between items-center relative z-10">
+			<div id="geo-status" class="text-xs">Mencari Lokasi...</div>
+			<div class="flex gap-2">
+				<span class="status-dot bg-green-400"></span>
+				<span class="font-semibold">Online</span>
+			</div>
+		</div>
+	</div>
 
-<div style="
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:16px;
-">
-  <h2>🚀 My App</h2>
-  <p>Klik untuk mulai</p>
+	<!-- Branding (Logo Binary Digital) -->
+	<div class="flex justify-center mt-8 mb-4">
+		<div class="flex items-center gap-3">
+			<img src="https://i.ibb.co/6bQy7Qw/binary-logo.png" alt="Binary Digital Logo" class="w-10 h-10 rounded-full">
+			<span class="font-bold text-lg">Binary Digital</span>
+		</div>
+	</div>
 
-  <button style="
-    padding:14px 24px;
-    font-size:16px;
-    border-radius:12px;
-    border:none;
-    background:#1a73e8;
-    color:#fff;
-  " onclick="openApp()">
-    Buka Aplikasi
-  </button>
+	<!-- Dashboard Grid -->
+	<div class="px-6 grid grid-cols-2 gap-5 mt-4 flex-grow">
+		<div onclick="openForm('IN')" class="btn-card bg-blue-50/70 p-7 rounded-[40px] border border-blue-100 flex flex-col items-center justify-center gap-4 group">
+			<span class="icon" data-lucide="log-in"></span>
+			<span class="font-semibold">Masuk Kerja</span>
+		</div>
+		<div onclick="openForm('OUT')" class="btn-card bg-orange-50/70 p-7 rounded-[40px] border border-orange-100 flex flex-col items-center justify-center gap-4 group">
+			<span class="icon" data-lucide="log-out"></span>
+			<span class="font-semibold">Pulang Kerja</span>
+		</div>
+		<div onclick="openForm('IZIN')" class="btn-card bg-purple-50/70 p-7 rounded-[40px] border border-purple-100 flex flex-col items-center justify-center gap-4 group">
+			<span class="icon" data-lucide="file-text"></span>
+			<span class="font-semibold">Izin / Cuti</span>
+		</div>
+		<div onclick="openForm('LEMBUR')" class="btn-card bg-amber-50/70 p-7 rounded-[40px] border border-amber-100 flex flex-col items-center justify-center gap-4 group">
+			<span class="icon" data-lucide="clock"></span>
+			<span class="font-semibold">Lembur Unit</span>
+		</div>
+	</div>
+
+	<div class="p-10 text-center">
+		<p class="text-gray-300 text-[10px] font-semibold uppercase tracking-widest" style="font-family: 'Inter', sans-serif;">&copy; 2024 Binary Digital Core System</p>
+	</div>
+
+	<!-- UI Modals (Overlay & Bottom Sheet) -->
+	<div id="overlay" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm opacity-0" onclick="closeModal()"></div>
+	<div id="sheet" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white z-[60] p-8 translate-y-full shadow-2xl overflow-y-auto max-h-[90vh]">
+		<div class="w-20 h-1.5 bg-gray-200 rounded-full mx-auto mb-8"></div>
+		<div class="mb-8 text-center sm:text-left">
+			<span id="sheet-title" class="font-bold text-xl">Form Absensi</span>
+		</div>
+		<div class="space-y-6 pb-10">
+			<!-- Konten form dinamis, diisi oleh script.js -->
+			<div id="ui-shift" class="hidden">Shift: <select id="shift-select"></select></div>
+			<div id="ui-camera" class="hidden">Kamera: <div id="photo-preview" class="w-32 h-32 bg-gray-200 rounded-xl"></div></div>
+			<div id="ui-izin" class="hidden">Form Izin</div>
+			<div id="ui-lembur" class="hidden">Form Lembur</div>
+			<div id="ui-lembur-surat" style="display:none">Surat Lembur</div>
+			<div id="ui-lembur-hours" style="display:none">Jam Lembur</div>
+			<div id="ui-lembur-desc" style="display:none">Deskripsi Lembur</div>
+		</div>
+	</div>
 </div>
 
-<script>
-function openApp() {
-  // pindah TOP LEVEL → camera aman
-  window.location.href =
-    "https://script.google.com/macros/s/AKfycby2Fy9zfT0Gp0DjQ2155Mi9AQZl6JVLkEvwWEBy37C6VQBdSIWmyColAYWITPBzKfVAtQ/exec";
-}
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
