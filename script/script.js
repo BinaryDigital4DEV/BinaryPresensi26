@@ -1,7 +1,7 @@
 
 // Script ID Web Apps Script
 const SCRIPT_ID = '16CpmLWlEeUlYpfYpuMgbhCh_c8CNOZbKTFlYe-QnnYrrGD4duk3z6b0Z';
-const BASE_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec`;
+const BASE_URL = `https://script.google.com/macros/s/AKfycbxA5VCi04SdbSSv289a8saMRk0GwogpowKe5qOjh9COPjNnFiGDzxygUKR5Tbp_kedY/exec`;
 
 // Fetch initial data (staff, izin reasons, events)
 async function fetchInitialData() {
