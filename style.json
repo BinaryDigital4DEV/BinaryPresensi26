@@ -1,0 +1,92 @@
+{
+  "body": {
+    "fontFamily": "'Inter', sans-serif",
+    "background": "#f1f5f9",
+    "margin": "0 auto",
+    "minHeight": "100vh",
+    "overflowX": "hidden"
+  },
+  ".mobile-container": {
+    "width": "100%",
+    "maxWidth": "480px",
+    "margin": "0 auto",
+    "background": "white",
+    "minHeight": "100vh",
+    "position": "relative",
+    "boxShadow": "0 0 50px rgba(0,0,0,0.1)"
+  },
+  ".glass": {
+    "background": "rgba(255, 255, 255, 0.15)",
+    "backdropFilter": "blur(12px)",
+    "border": "1px solid rgba(255, 255, 255, 0.2)"
+  },
+  ".camera-box": {
+    "position": "relative",
+    "width": "100%",
+    "aspectRatio": "1/1",
+    "background": "#000",
+    "borderRadius": "32px",
+    "overflow": "hidden",
+    "boxShadow": "inset 0 0 20px rgba(0,0,0,0.5)"
+  },
+  ".face-mask": {
+    "position": "absolute",
+    "top": "50%",
+    "left": "50%",
+    "transform": "translate(-50%, -50%)",
+    "width": "75%",
+    "height": "85%",
+    "border": "2px dashed rgba(255,255,255,0.4)",
+    "borderRadius": "50% 50% 35% 35%",
+    "pointerEvents": "none"
+  },
+  ".btn-card": {
+    "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    "cursor": "pointer",
+    "userSelect": "none"
+  },
+  ".btn-card:active": {
+    "transform": "scale(0.92)"
+  },
+  "#sheet": {
+    "transition": "transform 0.5s cubic-bezier(0.32, 0.72, 0, 1)",
+    "borderRadius": "40px 40px 0 0"
+  },
+  "#overlay": {
+    "transition": "opacity 0.4s ease"
+  },
+  ".status-dot": {
+    "width": "8px",
+    "height": "8px",
+    "borderRadius": "50%",
+    "display": "inline-block",
+    "marginRight": "6px",
+    "animation": "pulse 2s infinite"
+  },
+  "@keyframes pulse": {
+    "0%": { "opacity": 1 },
+    "50%": { "opacity": 0.3 },
+    "100%": { "opacity": 1 }
+  },
+  "#photo-preview": {
+    "backgroundSize": "cover",
+    "backgroundPosition": "center",
+    "zIndex": 10
+  },
+  "@keyframes bounce-slow": {
+    "0%, 100%": { "transform": "translateY(0)" },
+    "50%": { "transform": "translateY(-12px) scale(1.08)" }
+  },
+  ".animate-bounce-slow": {
+    "animation": "bounce-slow 2.2s cubic-bezier(.68,-0.55,.27,1.55) infinite",
+    "transition": "boxShadow 0.3s"
+  },
+  ".avatar-glow": {
+    "boxShadow": "0 0 0 0 #6366f1, 0 0 24px 8px #6366f1aa",
+    "animation": "avatar-glow-pulse 2.2s infinite alternate"
+  },
+  "@keyframes avatar-glow-pulse": {
+    "0%": { "boxShadow": "0 0 0 0 #6366f1, 0 0 24px 8px #6366f1aa" },
+    "100%": { "boxShadow": "0 0 0 8px #6366f122, 0 0 32px 16px #6366f1cc" }
+  }
+}
