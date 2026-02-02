@@ -3,825 +3,687 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Binary Digital - Attendance</title>
+  <title>Binary Digital - Attendance System</title>
   
-  <!-- Libraries -->
+  <!-- CDN Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Plus+Jakarta+Sans:wght@600;800&display=swap" rel="stylesheet">
   
   <style>
-    /* CSS LANGSUNG DISINI AGAR TIDAK RIBET LOAD FILE */
-    body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0 auto; min-height: 100vh; overflow-x: hidden; }
-    .mobile-container { width: 100%; max-width: 480px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.1); }
+    /* CUSTOM STYLES */
+    body { font-family: 'Inter', sans-serif; background: #f1f5f9; -webkit-tap-highlight-color: transparent; }
     .glass { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .btn-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; user-select: none; }
+    .btn-card:active { transform: scale(0.95); }
+    #sheet { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); border-radius: 40px 40px 0 0; }
+    #overlay { transition: opacity 0.3s ease; }
+    
+    /* Camera */
     .camera-box { position: relative; width: 100%; aspect-ratio: 1/1; background: #000; border-radius: 32px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
-    .face-mask { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75%; height: 85%; border: 2px dashed rgba(255,255,255,0.4); border-radius: 50% 50% 35% 35%; pointer-events: none; }
-    .btn-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; user-select: none; }
-    .btn-card:active { transform: scale(0.92); }
-    #sheet { transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); border-radius: 40px 40px 0 0; }
-    #overlay { transition: opacity 0.4s ease; }
+    .face-mask { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75%; height: 85%; border: 2px dashed rgba(255,255,255,0.5); border-radius: 50% 50% 40% 40%; pointer-events: none; z-index: 10; }
+    #photo-preview, #photo-preview-lembur { background-size: cover; background-position: center; z-index: 20; }
+    
+    /* Animation */
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-    #photo-preview { background-size: cover; background-position: center; z-index: 10; }
-    @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px) scale(1.08); } }
-    .animate-bounce-slow { animation: bounce-slow 2.2s cubic-bezier(.68,-0.55,.27,1.55) infinite; transition: box-shadow 0.3s; }
-    .avatar-glow { box-shadow: 0 0 0 0 #6366f1, 0 0 24px 8px #6366f1aa; animation: avatar-glow-pulse 2.2s infinite alternate; }
-    @keyframes avatar-glow-pulse { 0% { box-shadow: 0 0 0 0 #6366f1, 0 0 24px 8px #6366f1aa; } 100% { box-shadow: 0 0 0 8px #6366f122, 0 0 32px 16px #6366f1cc; } }
+    .avatar-glow { animation: glow 3s infinite alternate; }
+    @keyframes glow { from { box-shadow: 0 0 10px rgba(255,255,255,0.5); } to { box-shadow: 0 0 20px rgba(255,255,255,0.8); } }
   </style>
 </head>
-<body>
+<body class="bg-slate-100 min-h-screen flex justify-center">
 
-<div class="mobile-container flex flex-col">
-  <!-- Top Header Section -->
-  <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-8 rounded-b-[50px] text-white shadow-2xl relative overflow-hidden font-sans z-10">
-    <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
-    <div class="flex justify-between items-center mb-8 relative z-20">
-      <div class="flex items-center gap-4">
-        <div class="w-14 h-14 bg-white/20 rounded-full border-2 border-white/50 p-1 shadow-inner backdrop-blur-lg">
-          <div class="w-full h-full rounded-full bg-white flex items-center justify-center animate-bounce-slow avatar-glow">
-            <img src="https://www.binarydigiprint.com/wp-content/uploads/2023/08/cropped-binary-logo-revisi-1.png" id="img-profile" class="w-12 h-12 rounded-full object-contain" alt="Logo">
+<div class="w-full max-w-[480px] bg-white min-h-screen relative shadow-2xl overflow-hidden flex flex-col">
+  
+  <!-- HEADER -->
+  <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-800 p-8 pb-12 rounded-b-[45px] text-white relative z-10 overflow-hidden">
+    <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+    
+    <div class="flex justify-between items-start mb-6 relative z-10">
+      <div class="flex gap-4 items-center">
+        <div class="w-14 h-14 bg-white/20 p-1 rounded-full backdrop-blur-md border border-white/30">
+          <div class="w-full h-full bg-white rounded-full flex items-center justify-center avatar-glow">
+            <img src="https://www.binarydigiprint.com/wp-content/uploads/2023/08/cropped-binary-logo-revisi-1.png" class="w-10 h-10 object-contain">
           </div>
         </div>
         <div>
-          <p class="text-[10px] uppercase tracking-[0.2em] font-semibold text-blue-100" id="greet-msg">Memuat...</p>
-          <h1 class="font-black text-2xl leading-tight">Binary Digital</h1>
+          <p class="text-[10px] uppercase tracking-[0.25em] text-blue-200 font-bold" id="greet-msg">LOADING...</p>
+          <h1 class="text-2xl font-black font-['Plus_Jakarta_Sans'] leading-none">Binary Digital</h1>
         </div>
       </div>
       <div class="text-right">
         <p id="clock" class="text-2xl font-black tracking-tight">00:00</p>
-        <p id="date-label" class="text-[9px] font-bold opacity-80 uppercase tracking-widest">---</p>
+        <p id="date-label" class="text-[10px] font-bold opacity-80 uppercase tracking-widest">---</p>
       </div>
     </div>
-    
-    <!-- Info Widget -->
-    <div class="glass rounded-[28px] p-5 flex justify-between items-center relative z-20">
+
+    <!-- INFO CARD -->
+    <div class="glass rounded-3xl p-5 flex items-center justify-between relative z-10">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center text-xl shadow-lg">🌤️</div>
-        <div>
-          <p class="text-[10px] font-bold text-blue-100 uppercase">Status Hari Ini</p>
-          <p id="event-name" class="text-[12px] font-bold truncate max-w-[140px]">Semangat Bekerja!</p>
+        <div class="overflow-hidden">
+          <p class="text-[10px] font-bold text-blue-100 uppercase">EVENT HARI INI</p>
+          <p id="event-name" class="text-xs font-bold truncate w-32">Memuat Data...</p>
         </div>
       </div>
-      <div class="h-10 w-[1px] bg-white/20 mx-2"></div>
+      <div class="h-8 w-[1px] bg-white/20"></div>
       <div class="text-right">
-        <p class="text-[10px] font-bold text-blue-200 uppercase">Lokasi Anda</p>
-        <p id="geo-status" class="text-[11px] font-bold text-white"><span class="status-dot bg-orange-400"></span>Mencari...</p>
+        <p class="text-[10px] font-bold text-blue-100 uppercase">GPS LOCATION</p>
+        <p id="geo-status" class="text-xs font-bold flex items-center justify-end"><span class="status-dot bg-orange-400"></span>Mencari...</p>
       </div>
     </div>
   </div>
 
-  <!-- Branding -->
-  <div class="flex justify-center mt-8 mb-4 relative z-10">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-xl">B</div>
-      <div class="flex flex-col">
-        <span class="font-black text-gray-800 text-lg tracking-tighter leading-none">BINARY DIGITAL</span>
-        <span class="text-[10px] text-blue-600 font-semibold tracking-[0.3em] leading-none mt-1 uppercase">Printing Service</span>
+  <!-- MENU GRID -->
+  <div class="flex-grow px-6 py-8 relative z-20">
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
+        <span class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black">B</span>
+        <div class="text-left">
+          <p class="text-xs font-black text-gray-800 leading-none">BINARY DIGITAL</p>
+          <p class="text-[8px] font-bold text-blue-600 tracking-widest uppercase">Printing Service</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div onclick="openForm('IN')" class="btn-card bg-blue-50 border border-blue-100 p-6 rounded-[32px] flex flex-col items-center gap-3 group hover:bg-blue-100">
+        <div class="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
+          <i data-lucide="log-in" class="w-7 h-7"></i>
+        </div>
+        <p class="text-xs font-bold text-blue-900 tracking-widest">MASUK</p>
+      </div>
+
+      <div onclick="openForm('OUT')" class="btn-card bg-orange-50 border border-orange-100 p-6 rounded-[32px] flex flex-col items-center gap-3 group hover:bg-orange-100">
+        <div class="w-14 h-14 bg-orange-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-orange-200 group-hover:scale-110 transition-transform">
+          <i data-lucide="log-out" class="w-7 h-7"></i>
+        </div>
+        <p class="text-xs font-bold text-orange-900 tracking-widest">PULANG</p>
+      </div>
+
+      <div onclick="openForm('IZIN')" class="btn-card bg-purple-50 border border-purple-100 p-6 rounded-[32px] flex flex-col items-center gap-3 group hover:bg-purple-100">
+        <div class="w-14 h-14 bg-purple-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-purple-200 group-hover:scale-110 transition-transform">
+          <i data-lucide="file-clock" class="w-7 h-7"></i>
+        </div>
+        <p class="text-xs font-bold text-purple-900 tracking-widest">IZIN/CUTI</p>
+      </div>
+
+      <div onclick="openForm('LEMBUR')" class="btn-card bg-amber-50 border border-amber-100 p-6 rounded-[32px] flex flex-col items-center gap-3 group hover:bg-amber-100">
+        <div class="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200 group-hover:scale-110 transition-transform">
+          <i data-lucide="zap" class="w-7 h-7"></i>
+        </div>
+        <p class="text-xs font-bold text-amber-900 tracking-widest">LEMBUR</p>
       </div>
     </div>
   </div>
 
-  <!-- Dashboard Grid (Tombol Menu) -->
-  <div class="px-6 grid grid-cols-2 gap-5 mt-4 flex-grow relative z-30 pb-10">
-    <div onclick="openForm('IN')" class="btn-card bg-blue-50/70 p-7 rounded-[40px] border border-blue-100 flex flex-col items-center justify-center gap-4 group hover:bg-blue-100 transition-colors">
-      <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-200 group-hover:bg-blue-700 transition-colors">
-        <i data-lucide="log-in" class="w-8 h-8"></i>
-      </div>
-      <p class="text-[11px] font-bold text-blue-900 tracking-widest">MASUK</p>
-    </div>
+  <div class="text-center pb-8">
+    <p class="text-[10px] text-gray-300 font-bold tracking-widest uppercase">&copy; 2024 Binary Digital Core</p>
+  </div>
+
+  <!-- MODAL / BOTTOM SHEET -->
+  <div id="overlay" class="fixed inset-0 bg-black/60 z-40 hidden opacity-0 backdrop-blur-sm" onclick="closeModal()"></div>
+  <div id="sheet" class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white z-50 rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] translate-y-full flex flex-col max-h-[90vh]">
     
-    <div onclick="openForm('OUT')" class="btn-card bg-orange-50/70 p-7 rounded-[40px] border border-orange-100 flex flex-col items-center justify-center gap-4 group hover:bg-orange-100 transition-colors">
-      <div class="w-16 h-16 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-orange-200 group-hover:bg-orange-600 transition-colors">
-        <i data-lucide="log-out" class="w-8 h-8"></i>
-      </div>
-      <p class="text-[11px] font-bold text-orange-900 tracking-widest">PULANG</p>
+    <!-- Drag Handle -->
+    <div class="w-full pt-4 pb-2 flex justify-center cursor-grab" onclick="closeModal()">
+      <div class="w-16 h-1.5 bg-gray-200 rounded-full"></div>
     </div>
 
-    <div onclick="openForm('IZIN')" class="btn-card bg-purple-50/70 p-7 rounded-[40px] border border-purple-100 flex flex-col items-center justify-center gap-4 group hover:bg-purple-100 transition-colors">
-      <div class="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-purple-200 group-hover:bg-purple-700 transition-colors">
-        <i data-lucide="file-clock" class="w-8 h-8"></i>
-      </div>
-      <p class="text-[11px] font-bold text-purple-900 tracking-widest">IZIN/CUTI</p>
-    </div>
+    <!-- Sheet Content (Scrollable) -->
+    <div class="overflow-y-auto px-8 pb-8 pt-2">
+      <h2 id="sheet-title" class="text-2xl font-black text-gray-800 font-['Plus_Jakarta_Sans']">Form Absensi</h2>
+      <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-6">Silahkan lengkapi data</p>
 
-    <div onclick="openForm('LEMBUR')" class="btn-card bg-amber-50/70 p-7 rounded-[40px] border border-amber-100 flex flex-col items-center justify-center gap-4 group hover:bg-amber-100 transition-colors">
-      <div class="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-amber-200 group-hover:bg-amber-600 transition-colors">
-        <i data-lucide="zap" class="w-8 h-8"></i>
-      </div>
-      <p class="text-[11px] font-bold text-amber-900 tracking-widest">LEMBUR</p>
-    </div>
-  </div>
-
-  <div class="p-10 text-center relative z-10">
-    <p class="text-gray-300 text-[10px] font-semibold uppercase tracking-widest">&copy; 2024 Binary Digital Core System</p>
-  </div>
-
-  <!-- UI Modals (Overlay & Bottom Sheet) -->
-  <div id="overlay" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closeModal()"></div>
-  
-  <div id="sheet" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white z-[60] p-8 translate-y-full shadow-2xl overflow-y-auto max-h-[90vh] rounded-t-[40px] transition-transform duration-500">
-    <div class="w-20 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 cursor-grab active:cursor-grabbing" onclick="closeModal()"></div>
-    <div class="mb-8 text-center sm:text-left">
-      <h2 id="sheet-title" class="text-3xl font-black text-gray-800 tracking-tighter">Form Absensi</h2>
-      <p class="text-xs text-gray-400 font-semibold uppercase mt-1 tracking-widest">Binary Digital Staff Portal</p>
-    </div>
-    
-    <div class="space-y-6 pb-10">
-      <!-- Staff Selection -->
-      <div>
-        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Pilih Nama Anda</label>
-        <select id="staff-select" class="w-full bg-gray-50 p-5 rounded-2xl border-none font-bold text-gray-700 outline-none focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer shadow-sm">
-          <option value="">Memuat nama...</option>
-        </select>
-      </div>
-
-      <!-- Shift Switcher -->
-      <div id="ui-shift" class="hidden">
-        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Shift Kerja</label>
-        <div class="grid grid-cols-2 gap-4">
-          <button onclick="setShift('Pagi')" id="btn-pagi" class="p-4 rounded-2xl border-2 font-bold transition-all border-blue-600 bg-blue-600 text-white shadow-lg">PAGI</button>
-          <button onclick="setShift('Siang')" id="btn-siang" class="p-4 rounded-2xl border-2 font-bold transition-all border-gray-100 bg-gray-50 text-gray-400">SIANG</button>
-        </div>
-      </div>
-
-      <!-- Kamera Box -->
-      <div id="ui-camera" class="hidden space-y-4">
-        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Verifikasi Wajah</label>
-        <div class="camera-box relative">
-          <video id="video" class="w-full h-full object-cover" autoplay playsinline></video>
-          <canvas id="canvas" class="hidden"></canvas>
-          <div class="face-mask"></div>
-          <div id="photo-preview" class="hidden absolute inset-0 rounded-[32px]"></div>
-          <button id="switch-cam-btn" onclick="switchCamera()" type="button" class="absolute top-2 right-2 bg-white/80 rounded-full p-2 shadow text-gray-700 z-20"><i data-lucide='refresh-ccw' class='w-5 h-5'></i></button>
-        </div>
-        <button id="snap-btn" onclick="capturePhoto()" class="w-full py-5 bg-gray-900 text-white rounded-[24px] font-black tracking-widest shadow-xl flex items-center justify-center gap-3 transition-transform active:scale-95">
-          <i data-lucide="camera" class="w-6 h-6"></i> AMBIL FOTO
-        </button>
-      </div>
-
-      <!-- Izin Section -->
-      <div id="ui-izin" class="hidden space-y-5">
+      <div class="space-y-5">
+        <!-- 1. Staff Selector -->
         <div>
-          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Jenis Izin</label>
-          <select id="izin-type" class="w-full bg-gray-50 p-5 rounded-2xl font-bold border-none outline-none focus:ring-4 focus:ring-purple-100 shadow-sm">
-            <option value="">Memuat jenis izin...</option>
-          </select>
-        </div>
-        
-        <div class="flex flex-col items-center mb-2 gap-2">
-          <button id="wa-izin-btn" type="button" class="w-full max-w-xs py-4 px-4 bg-green-500 hover:bg-green-600 text-white font-black rounded-2xl shadow-lg flex items-center justify-center gap-2 text-lg transition-all active:scale-95" onclick="sendWaIzin()">
-             Chat Pak Reza (WA)
-          </button>
-          <div class="w-full max-w-xs bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 text-xs font-semibold rounded-md px-3 py-2 mt-1">
-            <span class="font-bold">Peringatan:</span> Wajib ada respon dari manajemen, setelah itu dijadikan screenshot bukti persetujuan.
+          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Nama Staff</label>
+          <div class="relative">
+            <select id="staff-select" class="w-full bg-gray-50 border-none rounded-2xl p-4 font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
+              <option value="">Memuat data...</option>
+            </select>
+            <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block"> IZIN FULLDAY</label>
-            <div class="flex items-center gap-2 mb-2">
-              <input type="checkbox" id="izin-fullday-check" class="accent-purple-600 w-5 h-5" checked>
-              <span class="text-xs font-bold text-purple-700">IZIN FULLDAY</span>
-            </div>
-            <label class="text-[10px] text-gray-500 font-semibold ml-1 mb-1 block">Mulai Izin</label>
-            <input type="date" id="izin-day-start" class="w-full bg-gray-50 p-4 rounded-2xl border-none font-bold text-center outline-none focus:ring-4 focus:ring-purple-100 shadow-sm" />
-            <label class="text-[10px] text-gray-500 font-semibold ml-1 mb-1 block">Selesai Izin</label>
-            <input type="date" id="izin-day-end" class="w-full bg-gray-50 p-4 rounded-2xl border-none font-bold text-center outline-none focus:ring-4 focus:ring-purple-100 shadow-sm mt-2" />
-            <div id="izin-total-hari" class="text-xs text-gray-500 font-semibold mt-1 text-center"></div>
-          </div>
-          <div class="space-y-2">
-            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">IZIN NON FULL DAY</label>
-            <div class="flex items-center gap-2 mb-2">
-              <input type="checkbox" id="izin-nonfullday-check" class="accent-purple-600 w-5 h-5">
-              <span class="text-xs font-bold text-purple-700">IZIN NON FULLDAY</span>
-            </div>
-            <label class="text-[10px] text-gray-500 font-semibold ml-1 mb-1 block">Mulai Izin</label>
-            <input type="time" id="izin-time-start" class="w-full bg-gray-50 p-4 rounded-2xl border-none font-bold text-center outline-none focus:ring-4 focus:ring-purple-100 shadow-sm" />
-            <label class="text-[10px] text-gray-500 font-semibold ml-1 mb-1 block">Selesai Izin</label>
-            <input type="time" id="izin-time-end" class="w-full bg-gray-50 p-4 rounded-2xl border-none font-bold text-center outline-none focus:ring-4 focus:ring-purple-100 shadow-sm mt-2" />
-            <div id="izin-total-jam" class="text-xs text-gray-500 font-semibold mt-1 text-center"></div>
+        <!-- 2. Shift Toggle -->
+        <div id="ui-shift" class="hidden">
+          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Pilih Shift</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button id="btn-pagi" onclick="setShift('Pagi')" class="p-3 rounded-xl border-2 border-blue-600 bg-blue-600 text-white font-bold text-sm shadow-md transition-all">PAGI</button>
+            <button id="btn-siang" onclick="setShift('Siang')" class="p-3 rounded-xl border-2 border-gray-100 bg-gray-50 text-gray-400 font-bold text-sm transition-all">SIANG</button>
           </div>
         </div>
-        <textarea id="izin-detail" placeholder="Jelaskan alasan detail Anda di sini..." class="w-full bg-gray-50 p-5 rounded-2xl border-none h-28 font-medium outline-none focus:ring-4 focus:ring-purple-100 shadow-sm"></textarea>
-        
-        <div class="space-y-2">
-           <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Upload Bukti Screenshot WA</label>
-           <div id="izin-bukti-drop" class="w-full h-40 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-dashed border-purple-400 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-purple-50 relative">
-             <div class="flex flex-col items-center justify-center gap-2 pointer-events-none select-none">
-               <i data-lucide="image" class="w-10 h-10 text-purple-400"></i>
-               <span class="text-xs text-purple-700 font-semibold">Tap atau Drag Screenshot WA</span>
-             </div>
-             <input type="file" id="izin-bukti" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer h-full w-full" />
-           </div>
-           <div id="izin-bukti-preview" class="w-full h-40 bg-white rounded-2xl flex items-center justify-center overflow-hidden border border-purple-300 mt-2 shadow-sm" style="display:none;">
-             <img id="izin-bukti-img" src="" alt="Preview Bukti" class="object-contain max-h-full max-w-full rounded-xl" />
-           </div>
-        </div>
-      </div>
 
-      <!-- Lembur Section -->
-      <div id="ui-lembur" class="hidden space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Jam Mulai</label>
-            <input type="time" id="lembur-start" class="w-full bg-gray-50 p-4 rounded-2xl border-none font-black text-2xl text-center outline-none focus:ring-4 focus:ring-amber-100 shadow-sm" step="60">
+        <!-- 3. Camera Section -->
+        <div id="ui-camera" class="hidden">
+          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Foto Verifikasi</label>
+          <div class="camera-box">
+            <video id="video" class="w-full h-full object-cover" autoplay playsinline></video>
+            <canvas id="canvas" class="hidden"></canvas>
+            <div class="face-mask"></div>
+            <div id="photo-preview" class="hidden absolute inset-0"></div>
+            <button onclick="switchCamera()" class="absolute top-3 right-3 bg-white/20 backdrop-blur p-2 rounded-full text-white"><i data-lucide="refresh-ccw" class="w-5 h-5"></i></button>
           </div>
-          <div>
-            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Jam Selesai</label>
-            <input type="time" id="lembur-end" class="w-full bg-gray-50 p-4 rounded-2xl border-none font-black text-2xl text-center outline-none focus:ring-4 focus:ring-amber-100 shadow-sm" step="60">
-          </div>
-        </div>
-        <div>
-          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Tanggal Lembur</label>
-          <input type="date" id="lembur-day" class="w-full bg-gray-50 p-4 rounded-2xl border-none font-black text-xl text-center outline-none focus:ring-4 focus:ring-amber-100 shadow-sm" />
-          <div id="lembur-day-display" class="text-xs text-gray-500 font-semibold mt-1 text-center"></div>
-        </div>
-        <div id="ui-lembur-desc">
-          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Deskripsi Pekerjaan</label>
-          <textarea id="lembur-desc" placeholder="Jelaskan aktivitas lembur..." class="w-full bg-gray-50 p-4 rounded-2xl border-none h-20 font-medium outline-none focus:ring-4 focus:ring-amber-100 shadow-sm"></textarea>
-        </div>
-        <div id="ui-lembur-hours">
-          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Durasi</label>
-          <input type="text" id="lembur-hours" readonly class="w-full bg-gray-50 p-5 rounded-2xl border-none font-black text-4xl text-center outline-none focus:ring-4 focus:ring-amber-100 shadow-sm" placeholder="0 menit">
-        </div>
-        
-        <!-- Kamera Surat Lembur -->
-        <div id="ui-lembur-surat" class="space-y-2">
-          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Foto Surat Lembur</label>
-          <div class="camera-box relative">
-            <video id="video-lembur" class="w-full h-full object-cover" autoplay playsinline></video>
-            <canvas id="canvas-lembur" class="hidden"></canvas>
-            <!-- Guideline overlay -->
-            <div class="absolute inset-0 pointer-events-none z-10 border-2 border-dashed border-cyan-400 m-8 rounded-lg"></div>
-            <div id="photo-preview-lembur" class="hidden absolute inset-0 rounded-[32px]"></div>
-            <button id="switch-cam-btn-lembur" onclick="switchCameraLembur()" type="button" class="absolute top-2 right-2 bg-white/80 rounded-full p-2 shadow text-gray-700 z-20"><i data-lucide='refresh-ccw' class='w-5 h-5'></i></button>
-          </div>
-          <button id="snap-btn-lembur" onclick="capturePhotoLembur()" class="w-full py-5 bg-gray-900 text-white rounded-[24px] font-black tracking-widest shadow-xl flex items-center justify-center gap-3 transition-transform active:scale-95">
-            <i data-lucide="camera" class="w-6 h-6"></i> AMBIL FOTO SURAT
+          <button id="snap-btn" onclick="capturePhoto()" class="mt-3 w-full py-4 bg-gray-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+            <i data-lucide="camera" class="w-5 h-5"></i> AMBIL FOTO
           </button>
         </div>
-      </div>
 
-      <!-- Submit Action -->
-      <div class="pt-6 space-y-4">
-        <button onclick="submitNow()" class="w-full py-6 bg-blue-600 text-white rounded-[24px] font-black shadow-2xl shadow-blue-200 tracking-[0.2em] transition-transform active:scale-95">KIRIM SEKARANG</button>
-        <button onclick="closeModal()" class="w-full py-2 text-gray-400 font-bold text-xs uppercase tracking-widest text-center">Batal & Tutup</button>
+        <!-- 4. IZIN Section -->
+        <div id="ui-izin" class="hidden space-y-4">
+          <!-- Tombol WA -->
+          <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center">
+            <p class="text-xs text-blue-800 font-semibold mb-3">Wajib konfirmasi ke Manajemen via WA</p>
+            <button onclick="sendWaIzin()" class="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors">
+              <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Pak Reza
+            </button>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Jenis Izin</label>
+            <select id="izin-type" class="w-full bg-gray-50 border-none rounded-2xl p-4 font-bold text-gray-700 outline-none">
+              <option value="">Pilih...</option>
+            </select>
+          </div>
+
+          <!-- Toggle Full/Non -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex items-center gap-2 bg-gray-50 p-3 rounded-xl">
+              <input type="checkbox" id="izin-fullday-check" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500" checked onchange="toggleIzinMode()">
+              <label for="izin-fullday-check" class="text-xs font-bold text-gray-700">FULL DAY</label>
+            </div>
+            <div class="flex items-center gap-2 bg-gray-50 p-3 rounded-xl">
+              <input type="checkbox" id="izin-nonfullday-check" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500" onchange="toggleIzinMode()">
+              <label for="izin-nonfullday-check" class="text-xs font-bold text-gray-700">JAM (Non-Full)</label>
+            </div>
+          </div>
+
+          <!-- Date/Time Inputs -->
+          <div id="izin-date-group" class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-[9px] font-bold text-gray-400 block mb-1">Mulai</label>
+              <input type="date" id="izin-day-start" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-sm border-none outline-none">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-gray-400 block mb-1">Selesai</label>
+              <input type="date" id="izin-day-end" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-sm border-none outline-none">
+            </div>
+          </div>
+          <p id="izin-total-hari" class="text-center text-xs font-bold text-purple-600"></p>
+
+          <div id="izin-time-group" class="grid grid-cols-2 gap-3 hidden">
+            <div>
+              <label class="text-[9px] font-bold text-gray-400 block mb-1">Jam Mulai</label>
+              <input type="time" id="izin-time-start" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-sm border-none outline-none">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-gray-400 block mb-1">Jam Selesai</label>
+              <input type="time" id="izin-time-end" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-sm border-none outline-none">
+            </div>
+          </div>
+          <p id="izin-total-jam" class="text-center text-xs font-bold text-purple-600 hidden"></p>
+
+          <textarea id="izin-detail" placeholder="Jelaskan alasan izin..." class="w-full bg-gray-50 p-4 rounded-2xl h-24 font-semibold text-sm border-none outline-none resize-none"></textarea>
+
+          <!-- Upload Bukti -->
+          <div>
+            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Upload Bukti Chat WA</label>
+            <div id="izin-upload-box" class="border-2 border-dashed border-purple-200 bg-purple-50 h-32 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-purple-100 transition-colors relative">
+              <i data-lucide="image-plus" class="w-8 h-8 text-purple-400 mb-2"></i>
+              <span class="text-xs text-purple-600 font-bold">Tap untuk Upload</span>
+              <input type="file" id="izin-file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+            </div>
+            <img id="izin-preview-img" class="hidden w-full h-40 object-contain mt-2 rounded-xl bg-gray-100 border">
+          </div>
+        </div>
+
+        <!-- 5. LEMBUR Section -->
+        <div id="ui-lembur" class="hidden space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-[9px] font-bold text-gray-400 block mb-1">Jam Mulai</label>
+              <input type="time" id="lembur-start" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-2xl text-center border-none outline-none">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-gray-400 block mb-1">Jam Selesai</label>
+              <input type="time" id="lembur-end" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-2xl text-center border-none outline-none">
+            </div>
+          </div>
+          
+          <div>
+            <label class="text-[9px] font-bold text-gray-400 block mb-1">Tanggal Lembur</label>
+            <input type="date" id="lembur-day" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-center border-none outline-none">
+          </div>
+
+          <div>
+            <label class="text-[9px] font-bold text-gray-400 block mb-1">Deskripsi Pekerjaan</label>
+            <textarea id="lembur-desc" class="w-full bg-gray-50 p-3 rounded-xl font-semibold text-sm border-none outline-none h-20 resize-none"></textarea>
+          </div>
+
+          <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 text-center">
+            <span class="text-[10px] text-amber-800 font-bold uppercase tracking-widest">Durasi Lembur</span>
+            <p id="lembur-total" class="text-2xl font-black text-amber-600 mt-1">0 jam 0 menit</p>
+          </div>
+
+          <!-- Kamera Surat Lembur -->
+          <div id="ui-lembur-surat">
+            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Foto Surat Tugas</label>
+            <div class="camera-box">
+              <video id="video-lembur" class="w-full h-full object-cover" autoplay playsinline></video>
+              <canvas id="canvas-lembur" class="hidden"></canvas>
+              <!-- Guideline -->
+              <div class="absolute inset-4 border-2 border-dashed border-cyan-400 rounded-lg pointer-events-none opacity-70"></div>
+              <div id="photo-preview-lembur" class="hidden absolute inset-0"></div>
+              <button onclick="switchCameraLembur()" class="absolute top-3 right-3 bg-white/20 backdrop-blur p-2 rounded-full text-white"><i data-lucide="refresh-ccw" class="w-5 h-5"></i></button>
+            </div>
+            <button id="snap-btn-lembur" onclick="capturePhotoLembur()" class="mt-3 w-full py-4 bg-gray-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+              <i data-lucide="camera" class="w-5 h-5"></i> FOTO SURAT
+            </button>
+          </div>
+        </div>
+
+        <!-- 6. SUBMIT BUTTON -->
+        <div class="pt-4 pb-8">
+          <button onclick="submitData()" class="w-full py-5 bg-blue-600 text-white rounded-[20px] font-black text-lg shadow-xl shadow-blue-200 active:scale-95 transition-transform">
+            KIRIM DATA
+          </button>
+          <button onclick="closeModal()" class="w-full mt-3 py-3 text-gray-400 font-bold text-xs uppercase tracking-widest">
+            Batal
+          </button>
+        </div>
       </div>
     </div>
   </div>
+
 </div>
 
+<!-- JAVASCRIPT LOGIC -->
 <script>
-// =============== KONFIGURASI ===============
-// Ganti dengan URL Deployment AppScript Anda (Web App, Anyone access)
-const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxeVKs3Uai_gakqBFYiYg5-wahixtSqHyuXUhalbG2BUwOzW8uuI8JWMmSQa1FbMBu-/exec"; 
+// --- CONFIGURATION ---
+const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxeVKs3Uai_gakqBFYiYg5-wahixtSqHyuXUhalbG2BUwOzW8uuI8JWMmSQa1FbMBu-/exec";
 
-// =============== LOGIC JAVASCRIPT ===============
-console.log("System Initialized");
+// --- STATE ---
+let currentState = {
+  mode: null,
+  shift: 'Pagi',
+  photoSelfie: null,
+  photoSurat: null,
+  izinBukti: null,
+  location: "Mencari...",
+  camStream: null,
+  camFacing: 'user'
+};
 
-// --- API Helper dengan FETCH (Pengganti google.script.run) ---
-async function callApi(command, payload = {}, additionalData = {}) {
-  const body = {
-    command: command,
-    payload: payload, 
-    ...additionalData 
-  };
+// --- INIT ---
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  startClock();
+  getLocation();
+  fetchInitialData();
   
-  try {
-    // Mode no-cors atau text/plain untuk mengakali CORS Google
-    const response = await fetch(APPSCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: { "Content-Type": "text/plain;charset=utf-8" } 
-    });
+  // Listeners
+  setupIzinListeners();
+  setupLemburListeners();
+});
+
+// --- CLOCK ---
+function startClock() {
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById('clock').innerText = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', hour12:false});
+    document.getElementById('date-label').innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
     
-    const result = await response.json();
-    return result;
+    const h = now.getHours();
+    const greet = h < 11 ? "Selamat Pagi" : h < 15 ? "Selamat Siang" : h < 19 ? "Selamat Sore" : "Selamat Malam";
+    document.getElementById('greet-msg').innerText = greet;
+  }, 1000);
+}
+
+// --- API HELPER ---
+async function callApi(command, payload = {}, extra = {}) {
+  try {
+    const res = await fetch(APPSCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ command, payload, ...extra }),
+      headers: { "Content-Type": "text/plain;charset=utf-8" }
+    });
+    return await res.json();
   } catch (e) {
-    console.error("API Error", e);
-    // Jika JSON parse gagal, mungkin return HTML error page dari Google
-    return { error: "Gagal koneksi ke server. Coba refresh." };
+    console.error(e);
+    return { error: "Gagal koneksi server" };
   }
 }
 
-// --- Global Variables ---
-let currentMode = '';
-let selectedShift = 'Pagi';
-let capturedBase64 = null;
-let camStream = null;
-let camFacing = 'user';
-let addressText = "Mencari Lokasi...";
-let izinBuktiInput = null;
-let izinBuktiBase64 = '';
-let capturedBase64Lembur = null;
-let camStreamLembur = null;
-let camFacingLembur = 'environment';
+// --- FETCH DATA ---
+async function fetchInitialData() {
+  const staffSel = document.getElementById('staff-select');
+  try {
+    const data = await callApi('getInitialData');
+    
+    if (data.staffList) {
+      staffSel.innerHTML = '<option value="">Pilih Nama Anda...</option>';
+      data.staffList.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.text = s;
+        staffSel.add(opt);
+      });
+    }
+    
+    if (data.izinReasons) {
+      const izinSel = document.getElementById('izin-type');
+      izinSel.innerHTML = '<option value="">Pilih Jenis Izin...</option>';
+      data.izinReasons.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r; opt.text = r;
+        izinSel.add(opt);
+      });
+    }
 
-// --- Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
-    try { lucide.createIcons(); } catch(e){}
-    updateClock();
-    setInterval(updateClock, 1000);
-    initGeoLocation();
-    
-    // Load Data Awal (Staff & Izin)
-    fetchStaff(); 
-    
-    initIzinListeners();
-    initLemburListeners();
+    if (data.events && data.events.length > 0) {
+      const today = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'}); // MM/DD format match
+      const ev = data.events.find(e => e.date == today);
+      if(ev) document.getElementById('event-name').innerText = ev.name;
+    }
+  } catch(e) {
+    staffSel.innerHTML = '<option>Gagal memuat (Offline)</option>';
+  }
+}
+
+// --- LOCATION ---
+function getLocation() {
+  if(navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const coords = pos.coords.latitude + "," + pos.coords.longitude;
+      const res = await callApi('geo', {}, { coords });
+      currentState.location = (res && typeof res === 'string') ? res : coords;
+      document.getElementById('geo-status').innerHTML = '<span class="status-dot bg-green-400"></span>Terverifikasi';
+    }, () => {
+      currentState.location = "GPS OFF";
+      document.getElementById('geo-status').innerHTML = '<span class="status-dot bg-red-400"></span>GPS Mati';
+    });
+  }
+}
+
+// --- MODAL LOGIC ---
+window.openForm = (mode) => {
+  currentState.mode = mode;
+  document.getElementById('sheet-title').innerText = 
+    mode === 'IN' ? 'Absen Masuk' : 
+    mode === 'OUT' ? 'Absen Pulang' : 
+    mode === 'IZIN' ? 'Form Izin' : 'Form Lembur';
+
+  // Toggle Visibility
+  const show = (id, visible) => document.getElementById(id).classList.toggle('hidden', !visible);
+  
+  show('ui-shift', mode === 'IN' || mode === 'OUT');
+  show('ui-camera', mode === 'IN' || mode === 'OUT');
+  show('ui-izin', mode === 'IZIN');
+  show('ui-lembur', mode === 'LEMBUR');
+
+  // Reset Logic
+  if(mode === 'IN' || mode === 'OUT') startCamera('video');
+  else stopCamera();
+
+  if(mode === 'LEMBUR') {
+    startCamera('video-lembur', 'environment'); // Kamera belakang untuk surat
+    resetLemburForm();
+  }
+
+  // Animasi
+  const overlay = document.getElementById('overlay');
+  const sheet = document.getElementById('sheet');
+  overlay.classList.remove('hidden');
+  setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+  setTimeout(() => sheet.classList.remove('translate-y-full'), 10);
+};
+
+window.closeModal = () => {
+  const overlay = document.getElementById('overlay');
+  const sheet = document.getElementById('sheet');
+  sheet.classList.add('translate-y-full');
+  overlay.classList.add('opacity-0');
+  setTimeout(() => {
+    overlay.classList.add('hidden');
+    stopCamera();
+  }, 300);
+};
+
+// --- CAMERA FUNCTIONS ---
+async function startCamera(videoId, facing = 'user') {
+  stopCamera();
+  currentState.camFacing = facing;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
+    currentState.camStream = stream;
+    document.getElementById(videoId).srcObject = stream;
+  } catch(e) {
+    console.warn("Camera Fail", e);
+  }
+}
+
+function stopCamera() {
+  if(currentState.camStream) {
+    currentState.camStream.getTracks().forEach(t => t.stop());
+    currentState.camStream = null;
+  }
+}
+
+window.switchCamera = () => {
+  const newFace = currentState.camFacing === 'user' ? 'environment' : 'user';
+  startCamera('video', newFace);
+};
+
+window.switchCameraLembur = () => {
+  const newFace = currentState.camFacing === 'user' ? 'environment' : 'user';
+  startCamera('video-lembur', newFace);
+};
+
+window.capturePhoto = () => {
+  const vid = document.getElementById('video');
+  const can = document.getElementById('canvas');
+  if(!vid.srcObject) return;
+  
+  can.width = vid.videoWidth; can.height = vid.videoHeight;
+  can.getContext('2d').drawImage(vid, 0, 0);
+  
+  // Watermark
+  addWatermark(can);
+  
+  currentState.photoSelfie = can.toDataURL('image/jpeg', 0.8);
+  const prev = document.getElementById('photo-preview');
+  prev.style.backgroundImage = `url(${currentState.photoSelfie})`;
+  prev.classList.remove('hidden');
+  
+  document.getElementById('snap-btn').innerHTML = "FOTO OKE ✓";
+  document.getElementById('snap-btn').classList.add('bg-green-600');
+};
+
+window.capturePhotoLembur = () => {
+  const vid = document.getElementById('video-lembur');
+  const can = document.getElementById('canvas-lembur');
+  if(!vid.srcObject) return;
+  
+  can.width = vid.videoWidth; can.height = vid.videoHeight;
+  can.getContext('2d').drawImage(vid, 0, 0);
+  
+  currentState.photoSurat = can.toDataURL('image/jpeg', 0.8);
+  const prev = document.getElementById('photo-preview-lembur');
+  prev.style.backgroundImage = `url(${currentState.photoSurat})`;
+  prev.classList.remove('hidden');
+  
+  document.getElementById('snap-btn-lembur').innerHTML = "SURAT OKE ✓";
+  document.getElementById('snap-btn-lembur').classList.add('bg-green-600');
+};
+
+function addWatermark(canvas) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(0, h - 50, w, 50);
+  
+  ctx.fillStyle = "white";
+  ctx.font = "bold 24px Arial";
+  const date = new Date().toLocaleString('id-ID');
+  ctx.fillText(date, 20, h - 18);
+}
+
+// --- LOGIC PER FITUR ---
+
+// Shift
+window.setShift = (s) => {
+  currentState.shift = s;
+  const btnP = document.getElementById('btn-pagi');
+  const btnS = document.getElementById('btn-siang');
+  
+  const activeClass = "border-blue-600 bg-blue-600 text-white shadow-md";
+  const inactiveClass = "border-gray-100 bg-gray-50 text-gray-400";
+  
+  btnP.className = "p-3 rounded-xl border-2 font-bold text-sm transition-all " + (s === 'Pagi' ? activeClass : inactiveClass);
+  btnS.className = "p-3 rounded-xl border-2 font-bold text-sm transition-all " + (s === 'Siang' ? activeClass : inactiveClass);
+};
+
+// Izin
+function setupIzinListeners() {
+  const fileIn = document.getElementById('izin-file');
+  document.getElementById('izin-upload-box').onclick = () => fileIn.click();
+  
+  fileIn.onchange = (e) => {
+    const file = e.target.files[0];
+    if(file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('izin-preview-img').src = ev.target.result;
+        document.getElementById('izin-preview-img').classList.remove('hidden');
+        currentState.izinBukti = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+}
+
+window.toggleIzinMode = () => {
+  const full = document.getElementById('izin-fullday-check');
+  const non = document.getElementById('izin-nonfullday-check');
+  
+  // Mutual Exclusive (hanya salah satu)
+  if(event.target === full && full.checked) non.checked = false;
+  if(event.target === non && non.checked) full.checked = false;
+  
+  const isFull = full.checked;
+  document.getElementById('izin-date-group').classList.toggle('hidden', !isFull);
+  document.getElementById('izin-total-hari').classList.toggle('hidden', !isFull);
+  
+  document.getElementById('izin-time-group').classList.toggle('hidden', isFull);
+  document.getElementById('izin-total-jam').classList.toggle('hidden', isFull);
+};
+
+// Hitung Durasi Izin (Sederhana)
+document.getElementById('izin-day-end').addEventListener('change', () => {
+  const d1 = new Date(document.getElementById('izin-day-start').value);
+  const d2 = new Date(document.getElementById('izin-day-end').value);
+  if(d1 && d2) {
+    const diff = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+    document.getElementById('izin-total-hari').innerText = diff > 0 ? `Total: ${diff} Hari` : "Tanggal tidak valid";
+  }
 });
 
-// --- Clock ---
-function updateClock() {
-    const now = new Date();
-    document.getElementById('clock').innerText = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
-    document.getElementById('date-label').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    
-    const hr = now.getHours();
-    let g = "Selamat Malam";
-    if(hr < 11) g = "Selamat Pagi";
-    else if(hr < 15) g = "Selamat Siang";
-    else if(hr < 19) g = "Selamat Sore";
-    document.getElementById('greet-msg').innerText = g;
-    return { time: now.toLocaleTimeString('id-ID', {hour12:false}), date: now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'}) };
-}
-
-// --- Geolocation ---
-function initGeoLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            const coords = pos.coords.latitude + ", " + pos.coords.longitude;
-            // Panggil API Backend untuk translate koordinat
-            try {
-                const res = await callApi('geo', {}, { coords: coords });
-                addressText = (res && typeof res === 'string') ? res : coords;
-                document.getElementById('geo-status').innerHTML = '<span class="status-dot bg-green-400"></span>Terverifikasi';
-            } catch (e) {
-                addressText = coords;
-                document.getElementById('geo-status').innerHTML = '<span class="status-dot bg-yellow-400"></span>GPS Only';
-            }
-        }, () => {
-            addressText = "GPS Tidak Aktif";
-            document.getElementById('geo-status').innerHTML = '<span class="status-dot bg-red-400"></span>Tanpa GPS';
-        });
+// Lembur
+function setupLemburListeners() {
+  const calc = () => {
+    const s = document.getElementById('lembur-start').value;
+    const e = document.getElementById('lembur-end').value;
+    if(s && e) {
+      const [sh, sm] = s.split(':').map(Number);
+      const [eh, em] = e.split(':').map(Number);
+      let m = (eh * 60 + em) - (sh * 60 + sm);
+      if(m < 0) m += 24*60;
+      document.getElementById('lembur-total').innerText = `${Math.floor(m/60)} jam ${m%60} menit`;
     }
+  };
+  document.getElementById('lembur-start').onchange = calc;
+  document.getElementById('lembur-end').onchange = calc;
 }
 
-// --- Fetch Staff Data ---
-async function fetchStaff() {
-    const select = document.getElementById('staff-select');
-    select.innerHTML = '<option>Loading...</option>';
-    
-    try {
-        const data = await callApi('getInitialData');
-        
-        if(data && data.staffList) {
-            select.innerHTML = '<option value="">Pilih Nama Anda...</option>';
-            data.staffList.forEach(name => {
-                let opt = document.createElement('option');
-                opt.value = name; opt.text = name;
-                select.add(opt);
-            });
-            
-            // Izin List
-            const izinSelect = document.getElementById('izin-type');
-            if(izinSelect && data.izinReasons) {
-                izinSelect.innerHTML = '<option value="">Pilih Jenis Izin...</option>';
-                data.izinReasons.forEach(reason => {
-                    let opt = document.createElement('option');
-                    opt.value = reason; opt.text = reason;
-                    izinSelect.add(opt);
-                });
-            }
-            
-            // Events
-            if(data.events) {
-                const todayKey = new Date().toLocaleDateString('en-US', {month: '2-digit', day: '2-digit'});
-                const ev = data.events.find(e => e.date == todayKey);
-                if(ev) document.getElementById('event-name').innerText = ev.name;
-            }
-        } else {
-             select.innerHTML = '<option value="">Gagal Load Data</option>';
-        }
-    } catch (e) {
-        select.innerHTML = '<option value="">Offline Mode</option>';
-    }
+function resetLemburForm() {
+  document.getElementById('lembur-start').value = "";
+  document.getElementById('lembur-end').value = "";
+  document.getElementById('lembur-desc').value = "";
+  document.getElementById('lembur-total').innerText = "0 jam 0 menit";
+  currentState.photoSurat = null;
+  document.getElementById('photo-preview-lembur').classList.add('hidden');
+  document.getElementById('snap-btn-lembur').innerHTML = "FOTO SURAT";
+  document.getElementById('snap-btn-lembur').classList.remove('bg-green-600');
 }
 
-// --- UI Logic (Open/Close Form) ---
-window.openForm = function(type) {
-    currentMode = type;
-    const titleMap = { 'IN': 'Masuk Kerja', 'OUT': 'Pulang Kerja', 'IZIN': 'Izin / Cuti', 'LEMBUR': 'Lembur Unit' };
-    document.getElementById('sheet-title').innerText = titleMap[type] || 'Form Absensi';
-    
-    // Toggle Visibility
-    const els = {
-        shift: document.getElementById('ui-shift'),
-        camera: document.getElementById('ui-camera'),
-        izin: document.getElementById('ui-izin'),
-        lembur: document.getElementById('ui-lembur')
-    };
-    
-    if(els.shift) els.shift.classList.toggle('hidden', type !== 'IN' && type !== 'OUT');
-    if(els.camera) els.camera.classList.toggle('hidden', type !== 'IN' && type !== 'OUT');
-    if(els.izin) els.izin.classList.toggle('hidden', type !== 'IZIN');
-    if(els.lembur) els.lembur.classList.toggle('hidden', type !== 'LEMBUR');
+// WA Izin
+window.sendWaIzin = () => {
+  const name = document.getElementById('staff-select').value || "[NAMA]";
+  const text = `Assalamualaikum Pak Reza, Nama saya ${name}, Saya Mohon Izin mengajukan Izin/Cuti. Mohon konfirmasinya. Terima kasih.`;
+  window.open(`https://wa.me/+6281280774886?text=${encodeURIComponent(text)}`, '_blank');
+};
 
-    // Logic Khusus Lembur
-    const elLemburSurat = document.getElementById('ui-lembur-surat');
-    const elLemburHours = document.getElementById('ui-lembur-hours');
-    const elLemburDesc = document.getElementById('ui-lembur-desc');
+// --- SUBMIT FINAL ---
+window.submitData = async () => {
+  const staff = document.getElementById('staff-select').value;
+  if(!staff) return Swal.fire('Error', 'Pilih nama Anda dulu', 'error');
+
+  const payload = { action: currentState.mode, staff };
+
+  // BUILD PAYLOAD
+  if (currentState.mode === 'IN' || currentState.mode === 'OUT') {
+    if(!currentState.photoSelfie) return Swal.fire('Error', 'Foto Wajah Wajib!', 'warning');
+    payload.photo = currentState.photoSelfie;
+    payload.shift = currentState.shift;
+    payload.location = currentState.location;
+  }
+  else if (currentState.mode === 'IZIN') {
+    const isFull = document.getElementById('izin-fullday-check').checked;
+    if(!currentState.izinBukti) return Swal.fire('Error', 'Bukti WA Wajib Upload!', 'warning');
     
-    if (type === 'LEMBUR') {
-         if(elLemburSurat) elLemburSurat.style.display = '';
-         if(elLemburHours) elLemburHours.style.display = '';
-         if(elLemburDesc) elLemburDesc.style.display = '';
-         
-         // Reset Lembur
-         document.getElementById('lembur-start').value = '';
-         document.getElementById('lembur-end').value = '';
-         document.getElementById('lembur-desc').value = '';
-         document.getElementById('lembur-hours').value = 0;
-         document.getElementById('lembur-day').value = '';
-         document.getElementById('lembur-day-display').innerText = '';
-         capturedBase64Lembur = null;
-         
-         killCamera(); 
-         initCameraLembur('environment');
+    payload.reasonType = document.getElementById('izin-type').value;
+    payload.izinMode = isFull ? 'FULLDAY' : 'NONFULLDAY';
+    payload.detail = document.getElementById('izin-detail').value;
+    payload.izinBukti = currentState.izinBukti;
+    
+    if(isFull) {
+      payload.izinDayStart = document.getElementById('izin-day-start').value;
+      payload.izinDayEnd = document.getElementById('izin-day-end').value;
+      payload.izinTotalHari = document.getElementById('izin-total-hari').innerText;
     } else {
-        if(elLemburSurat) elLemburSurat.style.display = 'none';
-        if(elLemburHours) elLemburHours.style.display = 'none';
-        if(elLemburDesc) elLemburDesc.style.display = 'none';
-        killCameraLembur();
+      payload.izinTimeStart = document.getElementById('izin-time-start').value;
+      payload.izinTimeEnd = document.getElementById('izin-time-end').value;
+      payload.izinTotalJam = document.getElementById('izin-total-jam').innerText; // Pastikan ini terisi oleh JS
     }
-
-    if (type === 'IN' || type === 'OUT') {
-        initCamera('user');
-    }
-
-    // Animation
-    const overlay = document.getElementById('overlay');
-    const sheet = document.getElementById('sheet');
-    overlay.classList.remove('hidden');
-    setTimeout(() => {
-        overlay.style.opacity = "1";
-        sheet.classList.remove('translate-y-full');
-    }, 10);
-}
-
-window.closeModal = function() {
-    const overlay = document.getElementById('overlay');
-    const sheet = document.getElementById('sheet');
-    sheet.classList.add('translate-y-full');
-    overlay.style.opacity = "0";
-    setTimeout(() => {
-        overlay.classList.add('hidden');
-        killCamera();
-        killCameraLembur();
-        resetFormUI();
-    }, 400);
-}
-
-function resetFormUI() {
-    capturedBase64 = null;
-    capturedBase64Lembur = null;
+  }
+  else if (currentState.mode === 'LEMBUR') {
+    if(!currentState.photoSurat) return Swal.fire('Error', 'Foto Surat Wajib!', 'warning');
     
-    document.getElementById('photo-preview').classList.add('hidden');
-    document.getElementById('video').classList.remove('hidden');
-    
-    document.getElementById('photo-preview-lembur').classList.add('hidden');
-    document.getElementById('video-lembur').classList.remove('hidden');
+    payload.lemburStart = document.getElementById('lembur-start').value;
+    payload.lemburEnd = document.getElementById('lembur-end').value;
+    payload.lemburDay = document.getElementById('lembur-day').value;
+    payload.lemburDesc = document.getElementById('lembur-desc').value;
+    payload.hours = document.getElementById('lembur-total').innerText;
+    payload.lemburSurat = currentState.photoSurat;
+    payload.location = currentState.location; // Tambahan lokasi untuk lembur
+  }
 
-    izinBuktiBase64 = '';
-    if (izinBuktiInput) izinBuktiInput.value = '';
-    document.getElementById('izin-bukti-img').src = '';
-    document.getElementById('izin-bukti-preview').style.display = 'none';
-    
-    const btn = document.getElementById('snap-btn');
-    if(btn) {
-        btn.innerHTML = '<i data-lucide="camera" class="w-6 h-6"></i> AMBIL FOTO';
-        btn.classList.remove('bg-green-600');
-    }
-    
-    const btnLembur = document.getElementById('snap-btn-lembur');
-    if(btnLembur) {
-        btnLembur.innerHTML = '<i data-lucide="camera" class="w-6 h-6"></i> AMBIL FOTO SURAT';
-        btnLembur.classList.remove('bg-green-600');
-    }
-    
-    try { lucide.createIcons(); } catch(e){}
-}
+  // SEND
+  Swal.fire({ title: 'Mengirim Data...', didOpen: () => Swal.showLoading() });
+  
+  const res = await callApi('submit', payload);
+  
+  if(res && (res.success || res.izinBuktiUrl)) {
+    Swal.fire('Berhasil', 'Data tersimpan!', 'success');
+    closeModal();
+  } else {
+    Swal.fire('Gagal', res.error || 'Server error', 'error');
+  }
+};
 
-window.setShift = function(s) {
-    selectedShift = s;
-    const isPagi = s === 'Pagi';
-    document.getElementById('btn-pagi').className = isPagi ? 'p-4 rounded-2xl border-2 font-bold transition-all border-blue-600 bg-blue-600 text-white shadow-lg' : 'p-4 rounded-2xl border-2 font-bold transition-all border-gray-100 bg-gray-50 text-gray-400';
-    document.getElementById('btn-siang').className = !isPagi ? 'p-4 rounded-2xl border-2 font-bold transition-all border-blue-600 bg-blue-600 text-white shadow-lg' : 'p-4 rounded-2xl border-2 font-bold transition-all border-gray-100 bg-gray-50 text-gray-400';
-}
-
-// --- Submit Logic ---
-window.submitNow = async function() {
-    const staff = document.getElementById('staff-select').value;
-    if(!staff) return Swal.fire('Oops', 'Pilih nama Anda dulu.', 'warning');
-
-    let payload = { action: currentMode, staff };
-
-    if(currentMode === 'LEMBUR') {
-        const lemburStart = document.getElementById('lembur-start').value;
-        const lemburEnd = document.getElementById('lembur-end').value;
-        const lemburDesc = document.getElementById('lembur-desc').value;
-        const lemburHours = document.getElementById('lembur-hours').value;
-        const rawDay = document.getElementById('lembur-day').value;
-        
-        let lemburDay = '';
-        if (rawDay) {
-            const [yyyy, mm, dd] = rawDay.split('-');
-            lemburDay = `${dd} ${mm} ${yyyy}`;
-        }
-
-        if(!capturedBase64Lembur) return Swal.fire('Oops', 'Ambil foto dokumen lembur.', 'warning');
-        if(!lemburStart || !lemburEnd) return Swal.fire('Oops', 'Isi jam mulai dan selesai lembur.', 'warning');
-        if(!lemburDesc) return Swal.fire('Oops', 'Isi deskripsi pekerjaan lembur.', 'warning');
-
-        payload = {
-            action: currentMode,
-            staff,
-            photo: capturedBase64, 
-            location: addressText,
-            hours: lemburHours,
-            lemburStart,
-            lemburEnd,
-            lemburDesc,
-            lemburDay,
-            lemburSurat: capturedBase64Lembur
-        };
-
-    } else if (currentMode === 'IN' || currentMode === 'OUT') {
-        if(!capturedBase64) return Swal.fire('Oops', 'Ambil foto selfie dulu.', 'warning');
-        payload = {
-            action: currentMode,
-            staff,
-            shift: selectedShift,
-            photo: capturedBase64,
-            location: addressText
-        };
-
-    } else if (currentMode === 'IZIN') {
-        const reasonType = document.getElementById('izin-type').value;
-        const detail = document.getElementById('izin-detail').value;
-        const checkFull = document.getElementById('izin-fullday-check');
-        const checkNonFull = document.getElementById('izin-nonfullday-check');
-        
-        if(!reasonType) return Swal.fire('Oops', 'Pilih jenis izin.', 'warning');
-        if(!detail) return Swal.fire('Oops', 'Isi alasan detail.', 'warning');
-        if(!izinBuktiBase64) return Swal.fire('Oops', 'Upload bukti screenshot persetujuan WA.', 'warning');
-
-        let izinMode = (checkFull && checkFull.checked) ? 'FULLDAY' : 'NONFULLDAY';
-        
-        payload = {
-            action: currentMode,
-            staff,
-            reasonType,
-            detail,
-            izinMode,
-            izinDayStart: document.getElementById('izin-day-start').value,
-            izinDayEnd: document.getElementById('izin-day-end').value,
-            izinTimeStart: document.getElementById('izin-time-start').value,
-            izinTimeEnd: document.getElementById('izin-time-end').value,
-            izinTotalHari: document.getElementById('izin-total-hari').innerText.replace('Total: ','').replace(' Hari','').trim(),
-            izinTotalJam: document.getElementById('izin-total-jam').innerText.replace('Total: ','').trim(),
-            izinBukti: izinBuktiBase64
-        };
-    }
-
-    Swal.fire({ title: 'Mengirim Data...', text: 'Mohon tunggu sebentar', didOpen: () => Swal.showLoading() });
-
-    try {
-        const res = await callApi('submit', payload);
-        
-        if (res && (res.success || res.izinBuktiUrl)) { 
-             Swal.fire({ 
-                 icon: 'success', 
-                 title: 'Berhasil!', 
-                 text: currentMode === 'IZIN' ? 'Bukti berhasil diupload.' : 'Data tersimpan.',
-                 timer: 2000, 
-                 showConfirmButton: false 
-             });
-             closeModal();
-        } else {
-             Swal.fire('Gagal', (res && res.error) ? res.error : 'Terjadi kesalahan sistem.', 'error');
-        }
-    } catch (e) {
-        Swal.fire('Error Koneksi', 'Gagal menghubungi server.', 'error');
-    }
-}
-
-// --- Camera Logic ---
-async function initCamera(facing = 'user') {
-    camFacing = facing;
-    if(camStream) camStream.getTracks().forEach(t => t.stop());
-    try {
-        camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
-        document.getElementById('video').srcObject = camStream;
-    } catch(e) { console.warn("Camera access denied"); }
-}
-window.switchCamera = function() {
-    camFacing = (camFacing === 'user') ? 'environment' : 'user';
-    initCamera(camFacing);
-}
-function killCamera() {
-    if(camStream) camStream.getTracks().forEach(t => t.stop());
-}
-window.capturePhoto = function() {
-    const v = document.getElementById('video'), c = document.getElementById('canvas'), ctx = c.getContext('2d');
-    if(!v || !c) return;
-    c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
-    ctx.drawImage(v, 0, 0);
-    
-    // Watermark
-    const now = updateClock();
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(0, c.height - 40, c.width, 40);
-    ctx.fillStyle = "white";
-    ctx.font = "bold 20px Arial";
-    ctx.fillText(now.time + " | " + now.date, 20, c.height - 15);
-
-    capturedBase64 = c.toDataURL('image/jpeg', 0.8);
-    document.getElementById('photo-preview').style.backgroundImage = `url(${capturedBase64})`;
-    document.getElementById('photo-preview').classList.remove('hidden');
-    document.getElementById('video').classList.add('hidden');
-    
-    const btn = document.getElementById('snap-btn');
-    if(btn) {
-        btn.classList.add('bg-green-600');
-        btn.innerHTML = 'FOTO OKE ✓';
-    }
-}
-
-// --- Camera Lembur Logic ---
-async function initCameraLembur(facing = 'environment') {
-    camFacingLembur = facing;
-    if(camStreamLembur) camStreamLembur.getTracks().forEach(t => t.stop());
-    try {
-        camStreamLembur = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
-        document.getElementById('video-lembur').srcObject = camStreamLembur;
-    } catch(e) { console.log(e); }
-}
-window.switchCameraLembur = function() {
-    camFacingLembur = (camFacingLembur === 'user') ? 'environment' : 'user';
-    initCameraLembur(camFacingLembur);
-}
-function killCameraLembur() {
-    if(camStreamLembur) camStreamLembur.getTracks().forEach(t => t.stop());
-}
-window.capturePhotoLembur = function() {
-    const v = document.getElementById('video-lembur'), c = document.getElementById('canvas-lembur'), ctx = c.getContext('2d');
-    if(!v || !c) return;
-    c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
-    ctx.drawImage(v, 0, 0);
-    
-    capturedBase64Lembur = c.toDataURL('image/jpeg', 0.8);
-    document.getElementById('photo-preview-lembur').style.backgroundImage = `url(${capturedBase64Lembur})`;
-    document.getElementById('photo-preview-lembur').classList.remove('hidden');
-    document.getElementById('video-lembur').classList.add('hidden');
-    
-    const btn = document.getElementById('snap-btn-lembur');
-    if(btn) {
-        btn.classList.add('bg-green-600');
-        btn.innerHTML = 'SURAT OKE ✓';
-    }
-}
-
-// --- Izin Utils ---
-function initIzinListeners() {
-    izinBuktiInput = document.getElementById('izin-bukti');
-    const izinBuktiDrop = document.getElementById('izin-bukti-drop');
-    
-    if(izinBuktiDrop && izinBuktiInput) {
-        izinBuktiDrop.addEventListener('click', () => izinBuktiInput.click());
-        izinBuktiInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                const imgBukti = document.getElementById('izin-bukti-img');
-                const prevBukti = document.getElementById('izin-bukti-preview');
-                if(imgBukti) imgBukti.src = ev.target.result;
-                if(prevBukti) prevBukti.style.display = '';
-                izinBuktiBase64 = ev.target.result; 
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    const checkFull = document.getElementById('izin-fullday-check');
-    const checkNonFull = document.getElementById('izin-nonfullday-check');
-    
-    function toggleIzin(e) {
-        if(e.target === checkFull && checkFull.checked) checkNonFull.checked = false;
-        if(e.target === checkNonFull && checkNonFull.checked) checkFull.checked = false;
-        
-        const dStart = document.getElementById('izin-day-start');
-        const tStart = document.getElementById('izin-time-start');
-
-        if (checkFull && checkFull.checked) {
-             if(dStart) dStart.disabled = false;
-             if(tStart) tStart.disabled = true;
-        } else {
-             if(dStart) dStart.disabled = true;
-             if(tStart) tStart.disabled = false;
-        }
-    }
-    if(checkFull) checkFull.addEventListener('change', toggleIzin);
-    if(checkNonFull) checkNonFull.addEventListener('change', toggleIzin);
-    
-    if(checkFull) toggleIzin({target: checkFull});
-
-    // Kalkulasi Jam & Hari
-    const calcTime = () => {
-        const start = document.getElementById('izin-time-start').value;
-        const end = document.getElementById('izin-time-end').value;
-        if(!start || !end) return;
-        const [sh, sm] = start.split(':').map(Number);
-        const [eh, em] = end.split(':').map(Number);
-        let diff = (eh * 60 + em) - (sh * 60 + sm);
-        if(diff < 0) diff += 1440;
-        const totalJamEl = document.getElementById('izin-total-jam');
-        if(totalJamEl) totalJamEl.innerText = `Total: ${Math.floor(diff/60)} jam ${diff%60} menit`;
-    };
-    const tStartEl = document.getElementById('izin-time-start');
-    const tEndEl = document.getElementById('izin-time-end');
-    if(tStartEl) tStartEl.addEventListener('change', calcTime);
-    if(tEndEl) tEndEl.addEventListener('change', calcTime);
-    
-    const calcDays = () => {
-        const startEl = document.getElementById('izin-day-start');
-        const endEl = document.getElementById('izin-day-end');
-        if(!startEl || !endEl || !startEl.value || !endEl.value) return;
-        
-        const start = new Date(startEl.value);
-        const end = new Date(endEl.value);
-        const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
-        const totalHariEl = document.getElementById('izin-total-hari');
-        if(totalHariEl) totalHariEl.innerText = `Total: ${diffDays} Hari`;
-    };
-    const dStartEl = document.getElementById('izin-day-start');
-    const dEndEl = document.getElementById('izin-day-end');
-    if(dStartEl) dStartEl.addEventListener('change', calcDays);
-    if(dEndEl) dEndEl.addEventListener('change', calcDays);
-}
-
-// --- Lembur Utils ---
-function initLemburListeners() {
-     const lDay = document.getElementById('lembur-day');
-     if(lDay) {
-         lDay.addEventListener('change', () => {
-             const val = lDay.value;
-             if (val) {
-                 const [yyyy, mm, dd] = val.split('-');
-                 const disp = document.getElementById('lembur-day-display');
-                 if(disp) disp.innerText = `${dd} ${mm} ${yyyy}`;
-             }
-         });
-     }
-     
-     const calcLembur = () => {
-         const startEl = document.getElementById('lembur-start');
-         const endEl = document.getElementById('lembur-end');
-         if(!startEl || !endEl) return;
-         
-         const start = startEl.value;
-         const end = endEl.value;
-         if(!start || !end) return;
-         
-         const [sh, sm] = start.split(':').map(Number);
-         const [eh, em] = end.split(':').map(Number);
-         let diff = (eh * 60 + em) - (sh * 60 + sm);
-         if(diff < 0) diff += 1440;
-         
-         let txt = '';
-         if(Math.floor(diff/60) > 0) txt += Math.floor(diff/60) + ' jam ';
-         if(diff%60 > 0) txt += diff%60 + ' menit';
-         
-         const hoursEl = document.getElementById('lembur-hours');
-         if(hoursEl) hoursEl.value = txt || '0 menit';
-     };
-     const lStartEl = document.getElementById('lembur-start');
-     const lEndEl = document.getElementById('lembur-end');
-     if(lStartEl) lStartEl.addEventListener('change', calcLembur);
-     if(lEndEl) lEndEl.addEventListener('change', calcLembur);
-}
-
-window.sendWaIzin = function() {
-    const staffEl = document.getElementById('staff-select');
-    const staffName = staffEl ? staffEl.value : "[Nama]";
-    const msg = `Assalamualaikum Pak Reza, Nama saya ${staffName}, Saya Mohon Izin mengajukan Izin/Cuti.`;
-    window.open(`https://wa.me/+6281280774886?text=${encodeURIComponent(msg)}`, '_blank');
-}
 </script>
 </body>
 </html>
