@@ -8,7 +8,6 @@
   <!-- External Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- Load Lucide Icons dengan defer agar tidak memblokir render -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
@@ -18,7 +17,6 @@
 
 <div class="mobile-container flex flex-col">
   <!-- Top Header Section -->
-  <!-- z-index header di set 10 -->
   <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-8 rounded-b-[50px] text-white shadow-2xl relative overflow-hidden font-sans z-10">
     <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
     
@@ -69,7 +67,6 @@
   </div>
 
   <!-- Dashboard Grid (Tombol Menu) -->
-  <!-- PERBAIKAN: Menambahkan relative z-30 agar tombol PASTI di atas layer manapun -->
   <div class="px-6 grid grid-cols-2 gap-5 mt-4 flex-grow relative z-30 pb-10">
     <div onclick="openForm('IN')" class="btn-card bg-blue-50/70 p-7 rounded-[40px] border border-blue-100 flex flex-col items-center justify-center gap-4 group hover:bg-blue-100 transition-colors">
       <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-200 group-hover:bg-blue-700 transition-colors">
@@ -105,7 +102,6 @@
   </div>
 
   <!-- UI Modals (Overlay & Bottom Sheet) -->
-  <!-- z-index sangat tinggi (50+) agar menutupi semuanya saat aktif -->
   <div id="overlay" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closeModal()"></div>
   
   <div id="sheet" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white z-[60] p-8 translate-y-full shadow-2xl overflow-y-auto max-h-[90vh] rounded-t-[40px] transition-transform duration-500">
